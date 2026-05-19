@@ -1,24 +1,23 @@
-FROM php:8.4-fpm
+FROM php:8.4-apache
 
 RUN apt-get update && apt-get install -y \
-    nginx \
     git \
     unzip \
-    libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+    && a2enmod rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
+WORKDIR /var/www/html
 
 COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN mkdir -p /run/php
+RUN chown -R www-data:www-data var
 
-COPY nginx.conf /etc/nginx/sites-enabled/default
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
-EXPOSE 10000
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
+    /etc/apache2/sites-available/*.conf
 
-CMD service nginx start && php-fpm
+EXPOSE 80
