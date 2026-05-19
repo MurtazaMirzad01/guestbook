@@ -18,9 +18,17 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data var
 
+RUN a2enmod rewrite
+
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
-    /etc/apache2/sites-available/*.conf
+    /etc/apache2/sites-available/000-default.conf
 
+RUN echo '<Directory /var/www/html/public>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' > /etc/apache2/conf-available/symfony.conf
+
+RUN a2enconf symfony
 EXPOSE 80
