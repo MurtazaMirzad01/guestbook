@@ -11,6 +11,9 @@ WORKDIR /var/www/html
 
 COPY . .
 
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
+
 RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data var
